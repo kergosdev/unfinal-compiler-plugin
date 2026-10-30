@@ -123,7 +123,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().con
 ```
 
 For JPA, the `dev.kergos.jpa` preset does this for you; see
-[`kergos/jpa-preset-gradle-plugin`](https://github.com/kergos/jpa-preset-gradle-plugin).
+[`kergosdev/jpa-preset-gradle-plugin`](https://github.com/kergosdev/jpa-preset-gradle-plugin).
 
 Maven cannot register a third-party compiler plugin in `<compilerPlugins>`: that
 list is resolved as Plexus components. Every dependency of `kotlin-maven-plugin`
@@ -166,6 +166,43 @@ Tests compile classes with `kotlin-compile-testing` and assert the emitted flags
 with reflection: declaration defaults, all selector forms, Kotlin and Java
 annotation classes, classes without a marker, and untouched `var`/delegated
 properties.
+
+## Publishing
+
+Maven Central via the [Central Portal](https://central.sonatype.com) publisher API,
+through the `com.gradleup.nmcp` and `com.gradleup.nmcp.aggregation` plugins. They are
+applied per project on purpose: nmcp's settings plugin breaks the Kotlin build with
+the configuration cache on (`__buildFusService__` provider error).
+
+Credentials live in `~/.gradle/gradle.properties`, never in the repo:
+
+```properties
+centralPortalUsername=<token user from central.sonatype.com>
+centralPortalPassword=<token password>
+signingInMemoryKeyId=<key id; only the last 8 characters are used>
+signingInMemoryKeyPassword=<passphrase>
+signingInMemoryKey=<armored secret key on one line, newlines as \n>
+```
+
+```bash
+./gradlew clean nmcpPublishAggregationToCentralPortal
+```
+
+The passphrase never has to be stored. With `-PsigningUseGpg` the build signs
+through the local `gpg` binary instead, and gpg-agent asks for the passphrase once
+per cache lifetime:
+
+```bash
+./gradlew clean nmcpPublishAggregationToCentralPortal -PsigningUseGpg
+```
+
+That needs `gpg` on `PATH` and the secret key in the user keyring; if the prompt
+does not appear from the Gradle daemon, prime the agent first
+(`gpg -bs </dev/null`) or run the build with `--no-daemon`.
+
+`publishingType` is `USER_MANAGED`: the upload is validated but stays private until
+you release it in the portal. Signing is skipped when `signingInMemoryKey` is absent,
+so `publishToMavenLocal` works without a key.
 
 ## Licence
 
