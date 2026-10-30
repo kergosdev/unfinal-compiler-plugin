@@ -181,35 +181,28 @@ through the `com.gradleup.nmcp` and `com.gradleup.nmcp.aggregation` plugins. The
 applied per project on purpose: nmcp's settings plugin breaks the Kotlin build with
 the configuration cache on (`__buildFusService__` provider error).
 
-Credentials live in `~/.gradle/gradle.properties`, never in the repo:
+The portal token lives in `~/.gradle/gradle.properties`, never in the repo:
 
 ```properties
 centralPortalUsername=<token user from central.sonatype.com>
 centralPortalPassword=<token password>
-signingInMemoryKeyId=<key id; only the last 8 characters are used>
-signingInMemoryKeyPassword=<passphrase>
-signingInMemoryKey=<armored secret key on one line, newlines as \n>
 ```
 
 ```bash
 ./gradlew clean nmcpPublishAggregationToCentralPortal
 ```
 
-The passphrase never has to be stored. With `-PsigningUseGpg` the build signs
-through the local `gpg` binary instead, and gpg-agent asks for the passphrase once
-per cache lifetime:
-
-```bash
-./gradlew clean nmcpPublishAggregationToCentralPortal -PsigningUseGpg
-```
-
-That needs `gpg` on `PATH` and the secret key in the user keyring; if the prompt
-does not appear from the Gradle daemon, prime the agent first (`gpg -bs </dev/null`) or run the build with
-`--no-daemon`.
-
 `publishingType` is `USER_MANAGED`: the upload is validated but stays private until
-you release it in the portal. Signing is skipped when `signingInMemoryKey` is absent,
-so `publishToMavenLocal` works without a key.
+you release it in the portal.
+
+Signing picks whatever is available:
+
+- `signingInMemoryKey` (`+signingInMemoryKeyId`, `+signingInMemoryKeyPassword`) —
+  nothing else needed, suited to CI;
+- otherwise the local `gpg` binary, with the passphrase asked once by gpg-agent and
+  cached. Needs `gpg` on `PATH` and the key in the user keyring; if the prompt does
+  not appear from the Gradle daemon, prime the agent with `gpg -bs </dev/null` or run
+  with `--no-daemon`.
 
 ## Licence
 

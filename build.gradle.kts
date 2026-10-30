@@ -112,22 +112,18 @@ nmcpAggregation {
     }
 }
 
-// Signing only kicks in when a key is available, so publishToMavenLocal works without one.
-// -PsigningUseGpg defers the passphrase to gpg-agent, which prompts once and caches it.
+// Central needs signatures. Use the in-memory key when present, otherwise gpg-agent.
 signing {
-    // An empty value counts as "no key": providers treat a blank property as present.
     val key = providers.gradleProperty("signingInMemoryKey").filter { it.isNotBlank() }
-    if (providers.gradleProperty("signingUseGpg").isPresent) {
-        useGpgCmd()
-    } else if (key.isPresent) {
+    if (key.isPresent) {
         useInMemoryPgpKeys(
-            // Gradle accepts only the 8-character short id, with or without the 0x prefix.
+            // Gradle accepts only the 8-character short id.
             providers.gradleProperty("signingInMemoryKeyId").map { it.removePrefix("0x").takeLast(8) }.orNull,
             key.get(),
             providers.gradleProperty("signingInMemoryKeyPassword").orNull,
         )
+    } else {
+        useGpgCmd()
     }
-    if (key.isPresent || providers.gradleProperty("signingUseGpg").isPresent) {
-        sign(publishing.publications)
-    }
+    sign(publishing.publications)
 }
