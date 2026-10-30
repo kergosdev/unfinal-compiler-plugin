@@ -1,5 +1,8 @@
 # unfinal-compiler-plugin
 
+[![Maven Central](https://img.shields.io/maven-central/v/dev.kergos/unfinal-compiler-plugin?label=maven%20central)](https://central.sonatype.com/artifact/dev.kergos/unfinal-compiler-plugin)
+[![Kotlin](https://img.shields.io/badge/kotlin-2.4.x-7f52ff)](https://kotlinlang.org)
+
 A Kotlin compiler plugin that drops `ACC_FINAL` from properties and methods you
 select by annotation.
 
@@ -105,6 +108,10 @@ explicit attribute, while one defaulting to `EAGER` does not.
 
 ## Install
 
+Published on Maven Central as `dev.kergos:unfinal-compiler-plugin`; the version
+follows the Kotlin minor line, so Kotlin 2.4 uses `2.4.x`. The badge above tracks the
+latest published version; a fresh release takes up to ~30 minutes to appear.
+
 Put the jar on the Kotlin compiler plugin classpath and pass the selectors.
 
 Gradle:
@@ -197,8 +204,8 @@ per cache lifetime:
 ```
 
 That needs `gpg` on `PATH` and the secret key in the user keyring; if the prompt
-does not appear from the Gradle daemon, prime the agent first
-(`gpg -bs </dev/null`) or run the build with `--no-daemon`.
+does not appear from the Gradle daemon, prime the agent first (`gpg -bs </dev/null`) or run the build with
+`--no-daemon`.
 
 `publishingType` is `USER_MANAGED`: the upload is validated but stays private until
 you release it in the portal. Signing is skipped when `signingInMemoryKey` is absent,
